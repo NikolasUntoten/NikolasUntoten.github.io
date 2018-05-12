@@ -2,9 +2,12 @@
   "name": "testwebsite",
   "version": "1.0.0",
   "description": "test",
-  "main": "frontpage.js",
+  "main": "index.js",
   "scripts": {
-    "test": "start"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
   },
   "author": "NikolasUntoten",
   "license": "UNLICENSED",
@@ -15,6 +18,7 @@
     "babel-preset-react": "^6.24.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-scripts": "^1.1.4",
     "webpack": "^3.10.0"
   }
 }
