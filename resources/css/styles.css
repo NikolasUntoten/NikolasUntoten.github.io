@@ -1,7 +1,27 @@
-body: {
-	
+* {
+    font-family: sans-serif;
 }
-
-p: {
-	
+a {
+    font-style: normal;
+    text-decoration: none;
+}
+.red {
+    color: red;
+    border-color: red;
+}
+.black {
+    background-color: black;
+}
+#navbar {
+    width: 100vw;
+    height: auto;
+}
+#navlink {
+    width: 23.5%;
+    height: 40px;
+    padding-top: 10px;
+    display: inline-block;
+    text-align:center;
+    border-style: solid;
+    font-size:25px;
 }
