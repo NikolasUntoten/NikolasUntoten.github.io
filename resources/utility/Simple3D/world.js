@@ -165,9 +165,9 @@ function Polygon(points) {
 
         for (let i = 0; i < this.points.length; i++) {
             var point = this.points[i];
-            const dx = point.x - refPoint.x
-            const dy = point.y - refPoint.y;
-            const dz = point.z - refPoint.z;
+            var dx = point.x - refPoint.x
+            var dy = point.y - refPoint.y;
+            var dz = point.z - refPoint.z;
 
             if (axis == 'x') {
                 point.y = dy * cos - dz * sin + refPoint.y;
