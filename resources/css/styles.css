@@ -5,12 +5,15 @@ a {
     font-style: normal;
     text-decoration: none;
 }
-.red {
+.standard {
     color: red;
     border-color: red;
-}
-.black {
     background-color: black;
+}
+.selected {
+    color: black;
+    border-color: black;
+    background-color: red;
 }
 #navbar {
     width: 100vw;
