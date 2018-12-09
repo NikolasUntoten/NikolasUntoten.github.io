@@ -44,16 +44,16 @@ function World(canvas, viewer) {
         const ctx = this.canvas.getContext("2d");
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         sortPolys();
+
         for(let i = 0; i < this.polygons.length; i++) {
             var poly = this.polygons[i];
-
-
 
             ctx.beginPath();
 
             var point = poly.points[0];
             var relPoint = getRelativePoint(point);
             var drawPoint = getDrawingPoint(relPoint);
+
             ctx.moveTo(drawPoint.x, drawPoint.y);
 
             for (let j = 1; j < poly.points.length; j++) {
@@ -74,19 +74,17 @@ function World(canvas, viewer) {
     }
 
     getRelativePoint = function(point) {
-        var dx = point.x - this.viewer.position.x;
-		var dy = point.y - this.viewer.position.y;
-		var dz = point.z - this.viewer.position.z;
+        const d = point.getSubtract(this.viewer.position);
 
 		var cosXZ = Math.cos(this.viewer.angleXZ);
 		var sinXZ = Math.sin(this.viewer.angleXZ);
 		var cosYZ = Math.cos(this.viewer.angleYZ);
 		var sinYZ = Math.sin(this.viewer.angleYZ);
 
-		var relX = dx * cosXZ + dz * sinXZ;
-		var tempZ = dz * cosXZ - dx * sinXZ;
-		var relY = dy * cosYZ - tempZ * sinYZ;
-		var relZ = dy * sinYZ + tempZ * cosYZ;
+		var relX = d.x * cosXZ + d.z * sinXZ;
+		var tempZ = d.z * cosXZ - d.x * sinXZ;
+		var relY = d.y * cosYZ - tempZ * sinYZ;
+		var relZ = d.y * sinYZ + tempZ * cosYZ;
 
 		return new Point(relX, relY, relZ);
     }.bind(this);
@@ -101,19 +99,70 @@ function World(canvas, viewer) {
 		var w = this.canvas.width / 2;
 		var h = this.canvas.height / 2;
 
-		var drawX = w + (thetaXZ * w / this.viewer.fov);
-		var drawY = h + (thetaYZ * h / this.viewer.fov);
+		var drawX = w + (thetaXZ * this.viewer.fov);
+		var drawY = h + (-thetaYZ * this.viewer.fov);
 
 		return new Point(drawX, drawY, 0);
     }.bind(this);
 
-    distance = function(polygon) {
-        return 0;
-    }
-
     sortPolys = function() {
+        var changes = 0;
+		do {
+			changes = 0;
+			for (let i = 0; i < this.polygons.length - 1; i++) {
+				var comp = compare(this.polygons[i], this.polygons[i+1]);
+				if (comp > 0) {
+					var temp = this.polygons[i];
+                    this.polygons[i] = this.polygons[i+1];
+                    this.polygons[i+1] = temp;
+				}
+			}
+		} while (changes != 0);
+    }.bind(this);
 
-    }
+    //negative if poly1 farther, positive if poly1 closer
+    compare = function(poly1, poly2) {
+        var point1 = nearest(poly1);
+		var point2 = nearest(poly2);
+		var p1Dist = point1.distance(this.viewer.position);
+		var p2Dist = point2.distance(this.viewer.position);
+
+		if (p1Dist == p2Dist) {
+            point1 = avg(poly1);
+			point2 = avg(poly2);
+
+            p1Dist = point1.distance(this.viewer.position);
+    		p2Dist = point2.distance(this.viewer.position);
+        }
+
+        if (p1Dist == p2Dist) return 0;
+		return p1Dist < p2Dist ? 1 : -1;
+    }.bind(this);
+
+    distance = function(polygon) {
+        let midPoint = avg(polygon);
+        return midPoint.distance(this.viewer.position);
+    }.bind(this);
+
+    avg = function(polygon) {
+        var point = new Point(0,0,0);
+        for (let i = 0; i < polygon.points.length; i++) {
+            point.add(polygon.points[i]);
+        }
+        point.multiply(1.0/polygon.points.length);
+        return point;
+    }.bind(this);
+
+    nearest = function(polygon) {
+        var minDist = Number.MAX_SAFE_INTEGER;
+        var minPoint = new Point(0,0,0);
+        for (let i = 0; i < polygon.points.length; i++) {
+            if (polygon.points[i].distance(viewer.position) < minDist) {
+                minPoint = polygon.points[i];
+            }
+        }
+        return minPoint;
+    }.bind(this);
 }
 
 /* Stores data representing a viewer in the scene
@@ -165,19 +214,17 @@ function Polygon(points) {
 
         for (let i = 0; i < this.points.length; i++) {
             var point = this.points[i];
-            var dx = point.x - refPoint.x
-            var dy = point.y - refPoint.y;
-            var dz = point.z - refPoint.z;
+            var d = point.getSubtract(refPoint);
 
             if (axis == 'x') {
-                point.y = dy * cos - dz * sin + refPoint.y;
-                point.z = dy * sin + dz * cos + refPoint.z;
+                point.y = d.y * cos - d.z * sin + refPoint.y;
+                point.z = d.y * sin + d.z * cos + refPoint.z;
             } else if (axis == 'y') {
-                point.x = dx * cos - dz * sin + refPoint.x;
-                point.z = dx * sin + dz * cos + refPoint.z;
+                point.x = d.x * cos - d.z * sin + refPoint.x;
+                point.z = d.x * sin + d.z * cos + refPoint.z;
             } else if (axis == 'z') {
-                point.x = dx * cos - dy * sin + refPoint.x;
-                point.y = dx * sin + dy * cos + refPoint.y;
+                point.x = d.x * cos - d.y * sin + refPoint.x;
+                point.y = d.x * sin + d.y * cos + refPoint.y;
             }
         }
     }
@@ -188,9 +235,7 @@ function Polygon(points) {
      */
     Polygon.prototype.translate = function(delta) {
         for (let i = 0; i < this.points.length; i++) {
-            this.points[i].x += delta.x;
-            this.points[i].y += delta.y;
-            this.points[i].z += delta.z;
+            this.points[i].add(delta);
         }
     }
 }
@@ -206,4 +251,58 @@ function Point(x, y, z) {
     this.x = x;
     this.y = y;
     this.z = z;
+
+    Point.prototype.set = function(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    Point.prototype.add = function(point) {
+        this.x += point.x;
+        this.y += point.y;
+        this.z += point.z;
+    }
+
+    Point.prototype.getAdd = function(point) {
+        var x = this.x + point.x;
+        var y = this.y + point.y;
+        var z = this.z + point.z;
+        return new Point(x, y, z);
+    }
+
+    Point.prototype.subtract = function(point) {
+        this.x -= point.x;
+        this.y -= point.y;
+        this.z -= point.z;
+    }
+
+    Point.prototype.getSubtract = function(point) {
+        var x = this.x - point.x;
+        var y = this.y - point.y;
+        var z = this.z - point.z;
+        return new Point(x, y, z);
+    }
+
+    Point.prototype.multiply = function(scaler) {
+        this.x *= scaler;
+        this.y *= scaler;
+        this.z *= scaler;
+    }
+
+    Point.prototype.getMultiply = function(point) {
+        var x = this.x *= scaler;
+        var y = this.y *= scaler;
+        var z = this.z *= scaler;
+        return new Point(x, y, z);
+    };
+
+    Point.prototype.distance = function(point) {
+        var temp = this.getSubtract(point);
+        return Math.sqrt(temp.x*temp.x + temp.y*temp.y + temp.z*temp.z);
+    }
+
+    Point.prototype.copy = function() {
+        return new Point(this.x, this.y, this.z);
+    }
 }
