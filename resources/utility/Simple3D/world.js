@@ -24,7 +24,7 @@ function World(canvas, viewer) {
      *  polygon: the polygon to be added to the world. Should be of type Polygon
      */
      World.prototype.addPoly = function(polygon) {
-         sortPolys();
+         sortPolys(true);
          var index = 0;
          for(let i = 0; i < this.polygons.length; i++) {
             if (distance(polygon) < distance(this.polygons[i])) {
@@ -43,7 +43,7 @@ function World(canvas, viewer) {
     World.prototype.render = function() {
         const ctx = this.canvas.getContext("2d");
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        sortPolys();
+        sortPolys(false);
 
         for(let i = 0; i < this.polygons.length; i++) {
             var poly = this.polygons[i];
@@ -64,11 +64,12 @@ function World(canvas, viewer) {
             }
             ctx.closePath();
             ctx.fillStyle = poly.color;
-            ctx.strokeStyle = poly.color;
-            if (poly.skeleton) {
-                ctx.stroke();
-            } else {
+            ctx.strokeStyle = "#000000";
+            if (poly.fill){
                 ctx.fill();
+            }
+            if (poly.outline) {
+                ctx.stroke();
             }
         }
     }
@@ -105,8 +106,9 @@ function World(canvas, viewer) {
 		return new Point(drawX, drawY, 0);
     }.bind(this);
 
-    sortPolys = function() {
+    sortPolys = function(simple) {
         var changes = 0;
+
 		do {
 			changes = 0;
 			for (let i = 0; i < this.polygons.length - 1; i++) {
@@ -115,10 +117,46 @@ function World(canvas, viewer) {
 					var temp = this.polygons[i];
                     this.polygons[i] = this.polygons[i+1];
                     this.polygons[i+1] = temp;
+                    changes++;
 				}
 			}
+            if (!simple && changes > 100 && changes > this.polygons.length*0.9){
+                console.log("quicksorting!");
+                quicksort(this.polygons, compare, 0, this.polygons.length-1);
+            }
 		} while (changes != 0);
     }.bind(this);
+
+    quicksort = function(data, compare, lo, hi) {
+
+        if (lo < hi) {
+            var pi = partition(data, compare, lo, hi);
+
+            quicksort(data, compare, lo, pi-1);
+            quicksort(data, compare, pi+1, hi);
+        }
+
+    }.bind(this);
+
+    partition = function(data, compare, lo, hi) {
+        var pivot = data[hi];
+
+        var i = lo - 1;
+
+        for (var j = lo; j < hi-1; j++) {
+            if (compare(data[j], pivot) < 0) {
+                i++;
+
+                var temp = data[j];
+                data[j] = data[i];
+                data[i] = temp;
+            }
+        }
+
+        data[hi] = data[i+1];
+        data[i+1] = pivot;
+        return i+1;
+    }
 
     //negative if poly1 farther, positive if poly1 closer
     compare = function(poly1, poly2) {
@@ -169,14 +207,14 @@ function World(canvas, viewer) {
  *
  * Parameters:
  *  position: the position of the viewer.
- *  angleHorizontal: the horizontal angle of the viewer.
- *  angleVertical: the vertical angle of the viewer.
- *  fov: the field of view of this viewer.
+ *  angleHorizontal: the horizontal angle of the viewer, in degrees.
+ *  angleVertical: the vertical angle of the viewer, in degree.
+ *  fov: the field of view of this viewer. Recommended value is about the pixel width of your canvas, but may be chose.
  */
 function Viewer(position, angleHorizontal, angleVertical, fov) {
     this.position = position;
-    this.angleXZ = angleHorizontal;
-    this.angleYZ = angleVertical;
+    this.angleXZ = angleHorizontal * Math.PI / 180.0;
+    this.angleYZ = angleVertical * Math.PI / 180.0;
     this.fov = fov;
 }
 
@@ -190,7 +228,8 @@ function Viewer(position, angleHorizontal, angleVertical, fov) {
 function Polygon(points) {
     this.points = points;
     this.color = "#000000";
-    this.skeleton = false;
+    this.fill = true;
+    this.outline = false;
 
     /* Checks whether or not the given points form a valid polygon.
      * returns a boolean expression.
