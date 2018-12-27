@@ -68,6 +68,7 @@ function Terrain(initWidth, initHeight, initSeaLevel) {
     //x, y, width and height are all defined in pixels. leave width/height undefined to get until the end of the array.
     Terrain.prototype.get = function(quality, x, y, width, height) {
         quality *= 100; //at .1, = 10, because terrain is in 100m chunks, and .1 is 10m/p
+        quality = Math.floor(quality);
 
         if (width == undefined || x+width > (this.terrain.getMaxX()-this.terrain.getMinX())*quality) {
             width = (this.terrain.getMaxX()-this.terrain.getMinX())*quality-x;
@@ -85,20 +86,26 @@ function Terrain(initWidth, initHeight, initSeaLevel) {
 
         for (var tempX = x; tempX < x+width; tempX += quality) {
             for (var tempY = y; tempY < y+height; tempY += quality) {
-                const val0 = this.terrain.get(this.terrain.getMinX() + tempX/quality, this.terrain.getMinY() + tempY/quality);
-                const val1 = this.terrain.get(this.terrain.getMinX()+(tempX+quality)/quality, this.terrain.getMinY()+(tempY)/quality);
-                const val2 = this.terrain.get(this.terrain.getMinX()+(tempX-quality)/quality, this.terrain.getMinY()+(tempY)/quality);
-                const val3 = this.terrain.get(this.terrain.getMinX()+(tempX)/quality, this.terrain.getMinY()+(tempY+quality)/quality);
-                const val4 = this.terrain.get(this.terrain.getMinX()+(tempX)/quality, this.terrain.getMinY()+(tempY-quality)/quality);
+
+                var hasLand = false;
+                for (var i = -1; i <= 1; i++) {
+                    for (var j = -1; j <= 1; j++) {
+                        //val represents whether or not this space has land
+                        var val = this.terrain.get(this.terrain.getMinX() + (tempX+quality*i)/quality,
+                                                   this.terrain.getMinY() + (tempY+quality*j)/quality);
+                        if (typeof val != undefined && val) {
+                            hasLand = true;
+                        }
+                    }
+                }
+
+
                 for (var i = 0; i < quality; i++) {
                     for (var j = 0; j < quality; j++) {
+                        if (tempX-x+i >= arr.length || tempY-y+j >= arr[0].length) continue;
+
                         var h = this.heightFunction(this.terrain.getMinX()+(tempX+i)/quality, this.terrain.getMinY()+(tempY+j)/quality);
-                        if (!val0
-                                && (val1 == undefined || !val1)
-                                && (val2 == undefined || !val2)
-                                && (val3 == undefined || !val3)
-                                && (val4 == undefined || !val4)
-                                && h > this.seaLevel) {
+                        if (!hasLand && h > this.seaLevel) {
                             h = this.seaLevel-(h-this.seaLevel)/(256.0-this.seaLevel)*this.seaLevel;
                         }
                         arr[tempX-x+i][tempY-y+j] = h;

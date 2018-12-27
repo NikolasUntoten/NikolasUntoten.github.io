@@ -1,0 +1,20 @@
+p {
+    display: inline-block;
+}
+
+#canvas {
+    width:'auto';
+    height:500px;
+}
+
+/* The slider itself */
+.slider {
+  width: 100px; /* Full-width */
+  background: #d3d3d3; /* Grey background */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+}
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}

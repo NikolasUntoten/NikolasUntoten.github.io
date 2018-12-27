@@ -6,14 +6,13 @@
         <meta name="description" content:"Template page for p5.js">
 
         <link rel="stylesheet" type:"text.CSS" href="/resources/css/styles.css">
+        <link rel="stylesheet" type:"text.CSS" href="styles.css">
 
-        <script language="javascript" type="text/javascript" src="/resources/utility/p5/p5.js"></script>
-        <script language="javascript" src="/resources/utility/p5/p5.dom.js"></script>
-        <script language="javascript" src="/resources/utility/p5/p5.sound.js"></script>
+        <script language="javascript" type="text/javascript" src="/resources/utility/p5/p5noise.js"></script>
 
         <script language="javascript" type="text/javascript" src="/resources/utility/terrain.js"></script>
 
-        <script language="javascript" type="text/javascript" src="sketch.js"></script>
+        <script language="javascript" type="text/javascript" src="app.js"></script>
     </head>
     <body>
         <div id="navbar">
@@ -22,6 +21,17 @@
             <a id="navlink" class="selected" href="/pages/mapgen/main.html"> Map Gen </a>
             <a id="navlink" class="standard" href="/pages/template/main.html"> Test Page </a>
         </div>
+
+        <br />
+
+        <input id="clickMe" type="button" value="Redraw" onclick="draw();" />
+        <input id="clickMe" type="button" value="Generate" onclick="generate();" />
+        <p> Quality </p>
+        <input type="range" min="1" max="100" value="50" class="slider" id="quality">
+        <p id="qualityNum"> 50 </p>
+
+        <br />
+
         <canvas id="canvas" />
         <div id="app" />
     </body>
