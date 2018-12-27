@@ -7,8 +7,9 @@ var terrain;
 
 var can;
 var ctx;
-var slider
-var sliderNum
+var slider;
+var sliderNum;
+var classicCheck;
 
 window.onload = function() {
     //var terrain = new Terrain(5000, 5000, SEA_LEVEL);
@@ -20,6 +21,7 @@ window.onload = function() {
     slider.oninput = function() {
         sliderNum.innerHTML = this.value;
     }
+    classicCheck = document.getElementById("classicCheck");
 
     // generate();
     // draw();
@@ -51,11 +53,15 @@ async function draw() {
         for (var bigY = 0; bigY < terrain.getHeight()*quality; bigY += chunk) {
             await sleep(0);
             var vals = terrain.get(quality, bigX, bigY, chunk, chunk);
+            var arr;
             for (var x = 0; x < vals.length; x++) {
                 for (var y = 0; y < vals[0].length; y++) {
-
-                    arr = convertOldTime(vals[x][y]);
-                    //console.log(arr);
+                    if (classicCheck.checked) {
+                        arr = convertOldTime(vals[x][y]);
+                    } else {
+                        arr = convert(vals[x][y]);
+                    }
+                    
                     ctx.fillStyle = rgbToHex(arr[0], arr[1], arr[2]);
                     ctx.fillRect(bigX+x, bigY+y, 1, 1);
                 }
