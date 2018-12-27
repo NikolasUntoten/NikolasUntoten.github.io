@@ -34,14 +34,18 @@ generate = function() {
     terrain.setSeaLevel(SEA_LEVEL);
     terrain.generate();
 
-    draw();
+    draw(0.01);
 }
 
-async function draw() {
+async function draw(q) {
     console.log("drawing");
     var chunk = 100;
+    if (q == undefined) {
+        quality = slider.value/100.0;
+    } else {
+        quality = q;
+    }
 
-    quality = slider.value/100.0;
 
     chunk -= chunk%(Math.floor(quality*100));
 
@@ -61,7 +65,7 @@ async function draw() {
                     } else {
                         arr = convert(vals[x][y]);
                     }
-                    
+
                     ctx.fillStyle = rgbToHex(arr[0], arr[1], arr[2]);
                     ctx.fillRect(bigX+x, bigY+y, 1, 1);
                 }

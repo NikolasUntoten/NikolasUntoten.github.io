@@ -70,14 +70,18 @@ function Terrain(initWidth, initHeight, initSeaLevel) {
         quality *= 100; //at .1, = 10, because terrain is in 100m chunks, and .1 is 10m/p
         quality = Math.floor(quality);
 
-        if (width == undefined || x+width > (this.terrain.getMaxX()-this.terrain.getMinX())*quality) {
+        if (width == undefined || width <= 0 || x+width > (this.terrain.getMaxX()-this.terrain.getMinX())*quality) {
             width = (this.terrain.getMaxX()-this.terrain.getMinX())*quality-x;
         }
-        if (height == undefined || y+height > (this.terrain.getMaxY()-this.terrain.getMinY())*quality) {
+        if (height == undefined || height <= 0 || y+height > (this.terrain.getMaxY()-this.terrain.getMinY())*quality) {
             height = (this.terrain.getMaxY()-this.terrain.getMinY())*quality-y;
         }
         if (x == undefined || x < 0) x = 0;
         if (y == undefined || y < 0) y = 0;
+
+        if (width <= 0 || height <= 0) {
+            return [[]];
+        }
 
         var arr = new Array(width);
         for (var i = 0; i < width; i++) {
@@ -173,7 +177,7 @@ function InfiniteArray(initWidth, initHeight) {
     resize = function(x, y) {
 
         if (x < 0) {
-            console.log("resizing negative x");
+            //console.log("resizing negative x");
             var extension = Math.max(-x, 20) + 1;
             var temp = new Array(this.array.length + extension);
             for (var i = 0; i < this.array.length; i++) {
@@ -185,7 +189,7 @@ function InfiniteArray(initWidth, initHeight) {
             this.array = temp;
             this.originX = this.originX + extension;
         } else if (x >= this.array.length) {
-            console.log("resizing positive x");
+            //console.log("resizing positive x");
             var extension = Math.max(x-this.array.length, 20) + 1;
             var temp = new Array(this.array.length + extension);
 
@@ -200,7 +204,7 @@ function InfiniteArray(initWidth, initHeight) {
         }
 
         if (y < 0) {
-            console.log("resizing negative y");
+            //console.log("resizing negative y");
             var extension = Math.max(-y, 20) + 1;
             var temp = new Array(this.array.length);
             for (var i = 0; i < this.array.length; i++) {
@@ -222,7 +226,7 @@ function InfiniteArray(initWidth, initHeight) {
             this.originY = this.originY + extension;
 
         } else if (y >= this.array[0].length) {
-            console.log("resizing positive y");
+            //console.log("resizing positive y");
             var extension = Math.max(y-this.array[0].length, 20) + 1;
             var temp = new Array(this.array.length);
             for (var i = 0; i < this.array.length; i++) {
