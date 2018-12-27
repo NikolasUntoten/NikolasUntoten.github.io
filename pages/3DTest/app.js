@@ -22,10 +22,12 @@ window.onload = function() {
     function loop(timestamp) {
         var progress = timestamp - lastRender;
 
+        console.log(progress);
+
         world.render();
 
         for (var i = 0; i < list.length; i++) {
-            list[i].rotate(new Point(12.5, 0, 32.5), progress/50, 'y');
+            list[i].rotate(new Point(12.5, 0, 32.5), progress/25, 'y');
         }
         poly.rotate(new Point(2.5, 2.5, 45), progress/10, 'y');
 

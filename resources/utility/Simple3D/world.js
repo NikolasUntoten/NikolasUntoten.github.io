@@ -120,9 +120,10 @@ function World(canvas, viewer) {
                     changes++;
 				}
 			}
-            if (!simple && changes > 100 && changes > this.polygons.length*0.9){
+            if (!simple && changes > 50 && changes > this.polygons.length*0.9){
                 console.log("quicksorting!");
                 quicksort(this.polygons, compare, 0, this.polygons.length-1);
+                changes = 0;
             }
 		} while (changes != 0);
     }.bind(this);
