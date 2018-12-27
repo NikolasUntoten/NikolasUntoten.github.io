@@ -24,8 +24,18 @@
 
         <br />
 
-        <input id="clickMe" type="button" value="Redraw" onclick="draw();" />
+        <p> This is a map making utility, currently using a version of Perlin noise, and a lot of spice to make it look like a map. </p>
+        <p>
+            Controls: Generate draws a low-resolution version of the picture, and redraw draws a higher resolution version (based on your selected quality).
+            Classic mode gives the map a nice old-timey feel, and without it there is a modern green/red topography color spectrum.
+        </p>
+        <p> This UI is super basic, and only for testing really. Please don't try to break it, it's fragile ;~; </p>
+
+        <br />
+
         <input id="clickMe" type="button" value="Generate" onclick="generate();" />
+        <input id="clickMe" type="button" value="Redraw" onclick="draw();" />
+
 
         <p> Quality </p>
         <input type="range" min="1" max="50" value="25" class="slider" id="quality">

@@ -3,20 +3,20 @@
 //initSeaLevel is the sea level used when determining what land should be shown.
 function Terrain(initWidth, initHeight, initSeaLevel) {
     this.seaLevel = initSeaLevel;
-    this.initWidth = initWidth*0.01;
-    this.initHeight = initHeight*0.01;
-    this.width = this.initWidth*0.01;
-    this.height = this.initHeight*0.01;
+    this.initWidth = initWidth*0.02;
+    this.initHeight = initHeight*0.02;
+    this.width = this.initWidth*0.02;
+    this.height = this.initHeight*0.02;
 
     //gets the height at the location
     //input should be chunked, such that x = meters/QUALITY
     this.heightFunction = function(x, y) {
-        const scale = 10; //meters per unit in noise
+        const scale = 20; //meters per unit in noise
         return (noise(x / (scale) + 5000000, y / (scale) + 5000000)) * 256;
     };
 
     //all terrain mappings are in chnks of 100m at a time
-    this.terrain = new InfiniteArray(Math.ceil(initWidth*0.01), Math.ceil(initHeight*0.01));
+    this.terrain = new InfiniteArray(Math.ceil(initWidth*0.02), Math.ceil(initHeight*0.02));
 
 
     Terrain.prototype.generate = function() {
