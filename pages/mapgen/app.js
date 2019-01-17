@@ -10,6 +10,7 @@ var ctx;
 var slider;
 var sliderNum;
 var classicCheck;
+var seedText;
 
 window.onload = function() {
     //var terrain = new Terrain(5000, 5000, SEA_LEVEL);
@@ -22,14 +23,20 @@ window.onload = function() {
         sliderNum.innerHTML = this.value;
     }
     classicCheck = document.getElementById("classicCheck");
+    seedText = document.getElementById("seed");
 
     // generate();
     // draw();
 }
 
 generate = function() {
-    terrain = new Terrain(5000, 5000, SEA_LEVEL)
-    noiseSeed(Date.now());
+    terrain = new Terrain(5000, 5000, SEA_LEVEL);
+
+    var seed = Date.now();
+
+    noiseSeed(seed);
+    seedText.innerHTML = seed;
+    
     console.log("generating!");
     terrain.setSeaLevel(SEA_LEVEL);
     terrain.generate();
