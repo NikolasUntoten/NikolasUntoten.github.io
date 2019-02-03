@@ -10,15 +10,15 @@
         <script language="javascript" type="text/javascript" src="/resources/utility/Simple3D/world.js"></script>
         <script language="javascript" type="text/javascript" src="/resources/utility/diamond-square.js"></script>
 
+        <!-- CODE TO LOAD IN NAVBAR -->
+        <script language="javascript" src="/resources/utility/jquery-3.3.1.min.js"></script>
+        <script language="javascript" src="/resources/utility/loadnav.js"></script>
+        <script>start("3d");</script>
+
         <script language="javascript" type="text/javascript" src="app.js"></script>
     </head>
     <body>
-        <div id="navbar">
-            <a id="navlink" class="standard" href="/"> Home </a>
-            <a id="navlink" class="selected" href="/pages/3DTest/main.html"> 3D Test </a>
-            <a id="navlink" class="standard" href="/pages/mapgen/main.html"> Map Gen </a>
-            <a id="navlink" class="standard" href="/pages/template/main.html"> Test Page </a>
-        </div>
+        <div id="navbar"></div>
         <canvas id="canvas" />
 
         <div id="app" />

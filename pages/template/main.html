@@ -1,25 +1,21 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <!-- PAGE INFORMATION -->
         <meta charset="utf-8">
         <title>Template</title>
-        <meta name="description" content:"Template page for p5.js">
+        <meta name="description" content:"Template page for website">
 
+        <!-- LOADS CSS -->
         <link rel="stylesheet" type:"text.CSS" href="/resources/css/styles.css">
 
-        <script language="javascript" type="text/javascript" src="/resources/utility/p5/p5.js"></script>
-        <script language="javascript" src="/resources/utility/p5/p5.dom.js"></script>
-        <script language="javascript" src="/resources/utility/p5/p5.sound.js"></script>
-
-        <script language="javascript" type="text/javascript" src="sketch.js"></script>
+        <!-- CODE TO LOAD IN NAVBAR -->
+        <script language="javascript" src="/resources/utility/jquery-3.3.1.min.js"></script>
+        <script language="javascript" src="/resources/utility/loadnav.js"></script>
+        <script>start("template");</script>
     </head>
     <body>
-        <div id="navbar">
-            <a id="navlink" class="red black" href="/"> Home </a>
-            <a id="navlink" class="red black" href="/pages/template/main.html"> Test Page </a>
-            <a id="navlink" class="red black" href="/pages/mapgen/main.html"> Map Gen </a>
-            <a id="navlink" class="red black" href="/pages/template/main.html"> Test Page </a>
-        </div>
+        <div id="navbar"></div>
         <div id="app" />
     </body>
 </html>

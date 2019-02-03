@@ -5,6 +5,15 @@ a {
     font-style: normal;
     text-decoration: none;
 }
+.navlink {
+    width: 23.5%;
+    height: 40px;
+    padding-top: 10px;
+    display: inline-block;
+    text-align:center;
+    border-style: solid;
+    font-size:25px;
+}
 .standard {
     color: red;
     border-color: red;
@@ -18,13 +27,4 @@ a {
 #navbar {
     width: 100vw;
     height: auto;
-}
-#navlink {
-    width: 23.5%;
-    height: 40px;
-    padding-top: 10px;
-    display: inline-block;
-    text-align:center;
-    border-style: solid;
-    font-size:25px;
 }
