@@ -1,12 +1,17 @@
 * {
     font-family: sans-serif;
+    --highlight-color: #C95050;
+    --detail-color: red;
+    --bg-color: #EEEEEE;
+    --text-color: black;
+    background-color:var(--bg-color);
 }
 a {
     font-style: normal;
     text-decoration: none;
 }
 .navlink {
-    width: 23.5%;
+    width: 200px;
     height: 40px;
     padding-top: 10px;
     display: inline-block;
@@ -15,14 +20,14 @@ a {
     font-size:25px;
 }
 .standard {
-    color: red;
-    border-color: red;
-    background-color: black;
+    color: var(--text-color);
+    border-color: var(--detail-color);
+    background-color: var(--bg-color);
 }
 .selected {
-    color: black;
-    border-color: black;
-    background-color: red;
+    color: var(--text-color);
+    border-color: var(--detail-color);
+    background-color: var(--highlight-color);
 }
 #navbar {
     width: 100vw;
