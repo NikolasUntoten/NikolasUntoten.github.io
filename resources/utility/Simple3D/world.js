@@ -24,7 +24,7 @@ function World(canvas, viewer) {
      *  polygon: the polygon to be added to the world. Should be of type Polygon
      */
      World.prototype.addPoly = function(polygon) {
-         sortPolys(true);
+         //sortPolys();
          var index = 0;
          for(let i = 0; i < this.polygons.length; i++) {
             if (distance(polygon) < distance(this.polygons[i])) {
@@ -43,30 +43,37 @@ function World(canvas, viewer) {
     World.prototype.render = function() {
         const ctx = this.canvas.getContext("2d");
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        sortPolys(false);
+        //quickBubble();
+        var polygons = sortPolys();
 
-        for(let i = 0; i < this.polygons.length; i++) {
-            var poly = this.polygons[i];
-
+        for(let i = 0; i < polygons.length; i++) {
+            var poly = polygons[i];
             ctx.beginPath();
 
             var point = poly.points[0];
             var relPoint = getRelativePoint(point);
             var drawPoint = getDrawingPoint(relPoint);
 
+            if (!drawPoint) continue;
             ctx.moveTo(drawPoint.x, drawPoint.y);
 
             for (let j = 1; j < poly.points.length; j++) {
                 point = poly.points[j];
                 relPoint = getRelativePoint(point);
                 drawPoint = getDrawingPoint(relPoint);
-                ctx.lineTo(drawPoint.x, drawPoint.y);
+                if (drawPoint) {
+                    if (drawPoint.x >= -400 && drawPoint.x <= this.canvas.width + 400
+                        && drawPoint.y >= -400 && drawPoint.y <= this.canvas.height + 400) {
+                            ctx.lineTo(drawPoint.x, drawPoint.y);
+                    }
+                }
             }
             ctx.closePath();
             ctx.fillStyle = poly.color;
-            ctx.strokeStyle = "#000000";
+            ctx.strokeStyle = poly.outline ? "#000000" : poly.color;
             if (poly.fill){
                 ctx.fill();
+                ctx.stroke();
             }
             if (poly.outline) {
                 ctx.stroke();
@@ -91,11 +98,12 @@ function World(canvas, viewer) {
     }.bind(this);
 
     getDrawingPoint = function(point) {
-        var thetaXZ = Math.atan2(point.x, point.z);
-		var thetaYZ = Math.atan2(point.y, point.z);
+        if (point.z <= 0) return undefined;
+        //var thetaXZ = Math.atan2(point.x, point.z);
+		//var thetaYZ = Math.atan2(point.y, point.z);
 
-		//var thetaXZ = point.x / point.z;
-		//var thetaYZ = point.y / point.z;
+		var thetaXZ = point.x / point.z;
+		var thetaYZ = point.y / point.z;
 
 		var w = this.canvas.width / 2;
 		var h = this.canvas.height / 2;
@@ -106,12 +114,52 @@ function World(canvas, viewer) {
 		return new Point(drawX, drawY, 0);
     }.bind(this);
 
-    sortPolys = function(simple) {
+    sortPolys = function() {
+        var hashTable = new Array(3000);
+        for (var i = 0; i < hashTable.length; i++) {
+            hashTable[i] = {next:undefined, length:0};
+        }
+
+        for (var i = 0; i < this.polygons.length; i++) {
+            var dist = nearest(this.polygons[i]).distance(this.viewer.position);
+            var hash = hashTable.length - Math.floor(Math.sqrt(dist * this.polygons.length - hashTable.length)) - 1;
+            if (0 <= hash && hash < hashTable.length) {
+                // -/- -> original
+                var entry = {next:hashTable[hash].next, value:this.polygons[i]};
+                hashTable[hash] = {next: entry, length: hashTable[hash].length+1};
+                // -/- -> entry -> original
+            }
+        }
+
+        //console.log(hashTable);
+
+        var results = new Array(this.polygons.length);
+        var count = 0;
+        for (var i = 0; i < hashTable.length; i++) {
+            //if (hashTable[i].length > 20) {
+                //console.log(hashTable[i].length + ", at " + i);
+                //continue;
+            //}
+            var entry = hashTable[i].next;
+            var start = count;
+            while (entry != undefined) {
+                results[count] = entry.value;
+                entry = entry.next;
+                count++;
+            }
+            quicksort(results, compare, entry, count-1);
+        }
+        results = results.slice(0, count);
+        return results;
+
+    }.bind(this);
+
+    quickBubble = function(simple) {
         var changes = 0;
 
 		do {
 			changes = 0;
-			for (let i = 0; i < this.polygons.length - 1; i++) {
+            for (let i = 0; i < this.polygons.length - 1; i++) {
 				var comp = compare(this.polygons[i], this.polygons[i+1]);
 				if (comp > 0) {
 					var temp = this.polygons[i];
@@ -120,7 +168,16 @@ function World(canvas, viewer) {
                     changes++;
 				}
 			}
-            if (!simple && changes > 50 && changes > this.polygons.length*0.9){
+            for (let i = this.polygons.length - 2; i >= 0; i--) {
+                var comp = compare(this.polygons[i], this.polygons[i+1]);
+				if (comp > 0) {
+					var temp = this.polygons[i];
+                    this.polygons[i] = this.polygons[i+1];
+                    this.polygons[i+1] = temp;
+                    changes++;
+				}
+			}
+            if (!simple && changes > 50 && changes > this.polygons.length*1.8){
                 console.log("quicksorting!");
                 quicksort(this.polygons, compare, 0, this.polygons.length-1);
                 changes = 0;
@@ -163,15 +220,15 @@ function World(canvas, viewer) {
     compare = function(poly1, poly2) {
         var point1 = nearest(poly1);
 		var point2 = nearest(poly2);
-		var p1Dist = point1.distance(this.viewer.position);
-		var p2Dist = point2.distance(this.viewer.position);
+		var p1Dist = point1.fastDist(this.viewer.position);
+		var p2Dist = point2.fastDist(this.viewer.position);
 
 		if (p1Dist == p2Dist) {
             point1 = avg(poly1);
 			point2 = avg(poly2);
 
-            p1Dist = point1.distance(this.viewer.position);
-    		p2Dist = point2.distance(this.viewer.position);
+            p1Dist = point1.fastDist(this.viewer.position);
+    		p2Dist = point2.fastDist(this.viewer.position);
         }
 
         if (p1Dist == p2Dist) return 0;
@@ -180,7 +237,7 @@ function World(canvas, viewer) {
 
     distance = function(polygon) {
         let midPoint = avg(polygon);
-        return midPoint.distance(this.viewer.position);
+        return midPoint.fastDist(this.viewer.position);
     }.bind(this);
 
     avg = function(polygon) {
@@ -212,11 +269,67 @@ function World(canvas, viewer) {
  *  angleVertical: the vertical angle of the viewer, in degree.
  *  fov: the field of view of this viewer. Recommended value is about the pixel width of your canvas, but may be chose.
  */
-function Viewer(position, angleHorizontal, angleVertical, fov) {
+function Viewer(position, angleHorizontal, angleVertical, fov, controlled) {
     this.position = position;
     this.angleXZ = angleHorizontal * Math.PI / 180.0;
     this.angleYZ = angleVertical * Math.PI / 180.0;
     this.fov = fov;
+
+    this.left = false;
+    this.right = false;
+    this.forward = false;
+    this.back = false;
+    this.rotLeft = false;
+    this.rotRight = false;
+    this.rotUp = false;
+    this.rotDown = false;
+    this.up = false;
+    this.down = false;
+
+    key = function(event, release) {
+        release = !release;
+        switch (event.keyCode) {
+            case 37: this.rotLeft = release;
+                break;
+            case 39: this.rotRight = release;
+                break;
+            case 38: this.rotUp = release;
+                break;
+            case 40: this.rotDown = release;
+                break;
+            case 65: this.left = release;
+                break;
+            case 68: this.right = release;
+                break;
+            case 87: this.forward = release;
+                break;
+            case 83: this.back = release;
+                break;
+            case 32: this.up = release;
+                break;
+            case 16: this.down = release;
+                break;
+        }
+    }.bind(this);
+
+    if (controlled) {
+        document.addEventListener('keydown', function(event) {key(event, false)});
+        document.addEventListener('keyup', function(event) {key(event, true)});
+    }
+
+    Viewer.prototype.move = function(xSpeed, ySpeed, zSpeed) {
+        var xChange = (-this.left + this.right)*xSpeed;
+        var yChange =  (-this.down + this.up)*ySpeed;
+        var zChange = (-this.back + this.forward)*zSpeed;
+        this.position.x += Math.cos(this.angleXZ)*xChange - Math.sin(this.angleXZ)*zChange;
+        this.position.y += yChange;
+        this.position.z += Math.sin(this.angleXZ)*xChange + Math.cos(this.angleXZ)*zChange;
+    }
+
+    Viewer.prototype.look = function(XZSpeed, YZSpeed) {
+        this.angleXZ += (this.rotLeft + -this.rotRight)*XZSpeed;
+        this.angleYZ += (-this.rotDown + this.rotUp)*YZSpeed;
+    }
 }
 
 /* Stores data for a polygon.
@@ -340,6 +453,12 @@ function Point(x, y, z) {
     Point.prototype.distance = function(point) {
         var temp = this.getSubtract(point);
         return Math.sqrt(temp.x*temp.x + temp.y*temp.y + temp.z*temp.z);
+    }
+
+    Point.prototype.fastDist = function(point) {
+        return  ((this.x-point.x)*(this.x-point.x))
+                +((this.y-point.y)*(this.y-point.y))
+                +((this.z-point.z)*(this.z-point.z));
     }
 
     Point.prototype.copy = function() {
