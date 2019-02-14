@@ -19,6 +19,9 @@ function World(canvas, viewer) {
     //The polygons that will be rendered. Should all be Polygons.
     this.polygons = [];
 
+    this.w = this.canvas.width / 2;
+    this.h = this.canvas.height / 2;
+
     /* Adds a given Polygon to the world.
      * Parameters:
      *  polygon: the polygon to be added to the world. Should be of type Polygon
@@ -84,10 +87,10 @@ function World(canvas, viewer) {
     getRelativePoint = function(point) {
         const d = point.getSubtract(this.viewer.position);
 
-		var cosXZ = Math.cos(this.viewer.angleXZ);
-		var sinXZ = Math.sin(this.viewer.angleXZ);
-		var cosYZ = Math.cos(this.viewer.angleYZ);
-		var sinYZ = Math.sin(this.viewer.angleYZ);
+		var cosXZ = this.viewer.cosXZ;
+		var sinXZ = this.viewer.sinXZ;
+		var cosYZ = this.viewer.cosYZ;
+		var sinYZ = this.viewer.sinYZ;
 
 		var relX = d.x * cosXZ + d.z * sinXZ;
 		var tempZ = d.z * cosXZ - d.x * sinXZ;
@@ -97,6 +100,7 @@ function World(canvas, viewer) {
 		return new Point(relX, relY, relZ);
     }.bind(this);
 
+
     getDrawingPoint = function(point) {
         if (point.z <= 0) return undefined;
         //var thetaXZ = Math.atan2(point.x, point.z);
@@ -105,29 +109,54 @@ function World(canvas, viewer) {
 		var thetaXZ = point.x / point.z;
 		var thetaYZ = point.y / point.z;
 
-		var w = this.canvas.width / 2;
-		var h = this.canvas.height / 2;
-
-		var drawX = w + (thetaXZ * this.viewer.fov);
-		var drawY = h + (-thetaYZ * this.viewer.fov);
+		var drawX = this.w + (thetaXZ * this.viewer.fov);
+		var drawY = this.h + (-thetaYZ * this.viewer.fov);
 
 		return new Point(drawX, drawY, 0);
     }.bind(this);
 
     sortPolys = function() {
-        var hashTable = new Array(3000);
+
+        if (this.polygons.length == 0) return;
+
+        var min = this.polygons[0].points[0].fastDist(this.viewer.position);
+        var max = this.polygons[0].points[0].fastDist(this.viewer.position);
+        for (var i = 0; i < this.polygons.length; i++) {
+            var current = nearest(this.polygons[i]).fastDist(this.viewer.position);
+            if (current < min) {
+                min = current;
+            }
+            if (current > max) {
+                max = current;
+            }
+        }
+
+        const BUFFER = 1.1;
+        min = Math.floor(min/BUFFER);
+        max = Math.ceil(max*BUFFER);
+
+        const OPTIMAL_LOAD = 10;
+
+        var hashTable = new Array(Math.ceil(this.polygons.length/OPTIMAL_LOAD));
+        var hashMult = (hashTable.length-1)/(max-min);
+
         for (var i = 0; i < hashTable.length; i++) {
             hashTable[i] = {next:undefined, length:0};
         }
 
         for (var i = 0; i < this.polygons.length; i++) {
-            var dist = nearest(this.polygons[i]).distance(this.viewer.position);
-            var hash = hashTable.length - Math.floor(Math.sqrt(dist * this.polygons.length - hashTable.length)) - 1;
+            var dist = nearest(this.polygons[i]).fastDist(this.viewer.position);
+            var hash = hashTable.length - 1 - Math.floor( (dist-min)*hashMult);
+            //var hash = hashTable.length - Math.floor(Math.sqrt(dist * this.polygons.length - hashTable.length)) - 1;
             if (0 <= hash && hash < hashTable.length) {
                 // -/- -> original
-                var entry = {next:hashTable[hash].next, value:this.polygons[i]};
-                hashTable[hash] = {next: entry, length: hashTable[hash].length+1};
+                hashTable[hash] = {
+                    next: {next:hashTable[hash].next, value:this.polygons[i]},
+                    length: hashTable[hash].length+1
+                };
                 // -/- -> entry -> original
+            } else {
+                console.log(min +", " + max + ", " + dist);
             }
         }
 
@@ -148,11 +177,38 @@ function World(canvas, viewer) {
                 count++;
             }
             quicksort(results, compare, entry, count-1);
+            //tango(results, entry, count);
         }
         results = results.slice(0, count);
         return results;
 
     }.bind(this);
+
+    tango = function(array, start, end) {
+        var changes = 0;
+
+		do {
+			changes = 0;
+            for (let i = start; i < end; i++) {
+				var comp = compare(array[i], array[i+1]);
+				if (comp > 0) {
+					var temp = array[i];
+                    array[i] = array[i+1];
+                    array[i+1] = temp;
+                    changes++;
+				}
+			}
+            for (let i = end - 2; i >= start; i--) {
+                var comp = compare(array[i], array[i+1]);
+				if (comp > 0) {
+					var temp = array[i];
+                    array[i] = array[i+1];
+                    array[i+1] = temp;
+                    changes++;
+				}
+			}
+		} while (changes != 0);
+    }
 
     quickBubble = function(simple) {
         var changes = 0;
@@ -275,6 +331,11 @@ function Viewer(position, angleHorizontal, angleVertical, fov, controlled) {
     this.angleYZ = angleVertical * Math.PI / 180.0;
     this.fov = fov;
 
+    this.cosXZ = Math.cos(this.angleXZ);
+    this.sinXZ = Math.sin(this.angleXZ);
+    this.cosYZ = Math.cos(this.angleYZ);
+    this.sinYZ = Math.sin(this.angleYZ);
+
     this.left = false;
     this.right = false;
     this.forward = false;
@@ -329,6 +390,14 @@ function Viewer(position, angleHorizontal, angleVertical, fov, controlled) {
     Viewer.prototype.look = function(XZSpeed, YZSpeed) {
         this.angleXZ += (this.rotLeft + -this.rotRight)*XZSpeed;
         this.angleYZ += (-this.rotDown + this.rotUp)*YZSpeed;
+        if (this.rotLeft + -this.rotRight != 0) {
+            this.cosXZ = Math.cos(this.angleXZ);
+            this.sinXZ = Math.sin(this.angleXZ);
+        }
+        if (-this.rotDown + this.rotUp != 0) {
+            this.cosYZ = Math.cos(this.angleYZ);
+            this.sinYZ = Math.sin(this.angleYZ);
+        }
     }
 }
 
@@ -418,10 +487,9 @@ function Point(x, y, z) {
     }
 
     Point.prototype.getAdd = function(point) {
-        var x = this.x + point.x;
-        var y = this.y + point.y;
-        var z = this.z + point.z;
-        return new Point(x, y, z);
+        return new Point(this.x + point.x,
+                        this.y + point.y,
+                        this.z + point.z);
     }
 
     Point.prototype.subtract = function(point) {
@@ -431,10 +499,9 @@ function Point(x, y, z) {
     }
 
     Point.prototype.getSubtract = function(point) {
-        var x = this.x - point.x;
-        var y = this.y - point.y;
-        var z = this.z - point.z;
-        return new Point(x, y, z);
+        return new Point(this.x - point.x,
+                        this.y - point.y,
+                        this.z - point.z);
     }
 
     Point.prototype.multiply = function(scaler) {
@@ -444,9 +511,9 @@ function Point(x, y, z) {
     }
 
     Point.prototype.getMultiply = function(point) {
-        var x = this.x *= scaler;
-        var y = this.y *= scaler;
-        var z = this.z *= scaler;
+        var x = this.x * scaler;
+        var y = this.y * scaler;
+        var z = this.z * scaler;
         return new Point(x, y, z);
     };
 

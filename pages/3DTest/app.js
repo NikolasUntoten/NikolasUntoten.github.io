@@ -59,7 +59,7 @@ getPolys = function() {
 
     var ds = new DiamondSquare(data, size, size, 2);
 
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 4; i++) {
         ds.iterate();
     }
     data = ds.dataStore;
