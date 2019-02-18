@@ -1,0 +1,26 @@
+.option {
+    display:inline-block;
+    width:100px;
+    height:120px;
+    margin-left:10px;
+    margin-right:10px;
+    text-align:center;
+}
+
+.option-image {
+    width:100%;
+    height:auto;
+    border-radius:50px;
+}
+
+.option-text {
+    margin:0;
+    color:#ac2ff9;
+    font-size:20px;
+}
+
+#options {
+    margin-top:25vh;
+    padding-left:20vw;
+    padding-right:20vw;
+}
