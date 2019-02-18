@@ -11,6 +11,17 @@
         <script language="javascript" src="/creation-online/resources/loadnav.js"></script>
         <script>start("gallery");</script>
 
+        <script type='text/javascript' src='/creation-online/resources/jquery.mousewheel.min.js'></script>
+        <script>
+        $(function() {
+            $("body").mousewheel(function(event, delta) {
+                var creations = document.getElementById('creation-holder');
+                creations.scrollLeft += ((event.deltaY + -event.deltaX)*event.deltaFactor);
+                event.preventDefault();
+            });
+        });
+        </script>
+
         <!-- <script language="javascript" type="text/javascript" src="app.js"></script> -->
     </head>
     <body>
@@ -18,7 +29,11 @@
             <img id="logo" src="/creation-online/resources/logo.png" />
             <div id="navbar"></div>
 
-
+            <div id="creation-holder">
+                <a class="creation-border" href="/creations/1ijfp89dsuayy3aslkjfakjva">
+                    <img class="image-creation" src="/creation-online/resources/logo.png" />
+                </a>
+            </div>
 
             <div id="app" />
         </div>

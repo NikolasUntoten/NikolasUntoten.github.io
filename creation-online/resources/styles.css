@@ -10,6 +10,31 @@ a {
     font-style: normal;
     text-decoration: none;
 }
+
+#creation-holder {
+    margin-top:10%;
+    height:50vh;
+    width:auto;
+    overflow-x:scroll;
+    overflow-y:hidden;
+    white-space:nowrap;
+}
+
+#creation-holder::-webkit-scrollbar {
+    display:none;
+}
+
+.creation-border {
+    height:100%;
+    width: auto;
+    display:inline-block;
+}
+
+.image-creation {
+    width:auto;
+    height:100%;
+}
+
 .navlink {
     width: 31%;
     height: 40px;
