@@ -45,7 +45,8 @@ function World(canvas, viewer) {
      */
     World.prototype.render = function() {
         const ctx = this.canvas.getContext("2d");
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.fillStyle = "#AAAAAA"
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         //quickBubble();
         var polygons = sortPolys();
 
@@ -103,11 +104,11 @@ function World(canvas, viewer) {
 
     getDrawingPoint = function(point) {
         if (point.z <= 0) return undefined;
-        //var thetaXZ = Math.atan2(point.x, point.z);
-		//var thetaYZ = Math.atan2(point.y, point.z);
+        var thetaXZ = Math.atan2(point.x, point.z);
+		var thetaYZ = Math.atan2(point.y, point.z);
 
-		var thetaXZ = point.x / point.z;
-		var thetaYZ = point.y / point.z;
+		//var thetaXZ = point.x / point.z;
+		//var thetaYZ = point.y / point.z;
 
 		var drawX = this.w + (thetaXZ * this.viewer.fov);
 		var drawY = this.h + (-thetaYZ * this.viewer.fov);
@@ -459,6 +460,15 @@ function Polygon(points) {
         for (let i = 0; i < this.points.length; i++) {
             this.points[i].add(delta);
         }
+    }
+
+    Polygon.prototype.setPos = function(pos) {
+
+        for (let i = 1; i < this.points.length; i++) {
+            this.points[i].subtract(this.points[0]);
+            this.points[i].add(pos);
+        }
+        this.points[0] = pos;
     }
 }
 
