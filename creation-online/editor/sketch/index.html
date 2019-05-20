@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Creation Editor</title>
+
+        <link rel="stylesheet" type:"text.CSS" href="/creation-online/resources/styles.css">
+        <link rel="stylesheet" type:"text.CSS" href="/creation-online/editor/sketch/styles.css">
+
+        <!-- CODE TO LOAD IN NAVBAR -->
+        <script language="javascript" src="/creation-online/resources/jquery-3.3.1.min.js"></script>
+        <script language="javascript" src="/creation-online/resources/loadnav.js"></script>
+        <script>start("editor");</script>
+
+
+        <script language="javascript" src="/resources/utility/scrollable-canvas.js"></script>
+        <script language="javascript" src="./app.js"></script>
+
+        <!-- <script language="javascript" type="text/javascript" src="app.js"></script> -->
+    </head>
+    <body>
+        <div>
+            <img id="logo" src="/creation-online/resources/logo.png" />
+            <div id="navbar"></div>
+
+            <input id="DRAW"    class="button" type="button" value="DRAW"   onclick="setTool(this.id);" />
+            <input id="ERASE"   class="button" type="button" value="ERASE"  onclick="setTool(this.id);" />
+            <input id="FILL"    class="button" type="button" value="FILL"   onclick="setTool(this.id);" />
+            <input id="SELECT"  class="button" type="button" value="SELECT" onclick="setTool(this.id);" />
+            <input id="SMEAR"   class="button" type="button" value="SMEAR"  onclick="setTool(this.id);" />
+            <input id="SHADE"   class="button" type="button" value="SHADE"  onclick="setTool(this.id);" />
+
+            <br />
+
+            <canvas id="canvas" />
+
+            <div id="app" />
+        </div>
+
+
+    </body>
+</html>
