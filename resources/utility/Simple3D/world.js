@@ -38,6 +38,10 @@ function World(canvas, viewer) {
          this.polygons.splice(index, 0, polygon);
      }
 
+     World.prototype.nuke = function(polygon) {
+         this.polygons = [];
+     }
+
     /* render refreshes the canvas to reflect the current state of this World.
      * Should generally be called when world changes, or camera position or angle changes.
      * You may also want to consider calling this method asynchonously, as it is by far the
@@ -347,7 +351,7 @@ function Viewer(position, angleHorizontal, angleVertical, fov, controlled) {
     this.up = false;
     this.down = false;
 
-    key = function(event, release) {
+    Viewer.prototype.key = function(event, release) {
         release = !release;
         switch (event.keyCode) {
             case 37: this.rotLeft = release;
@@ -426,10 +430,11 @@ function Polygon(points) {
     /* Rotates this polygon on a given axis, around the given point.
      * Parameters:
      *  refPoint: the point to be rotated around.
-     *  degrees: the number of degrees to rotate by.
-     *  axis: the Axis this will rotate around. Must be either 'x', 'y', or 'z'.
+     *  degrees: the number of degrees to rotate by on each axis.
      */
-    Polygon.prototype.rotate = function(refPoint, degrees, axis) {
+    Polygon.prototype.rotate = function(refPoint, degrees) {
+        //translate, convert to polar, do rotation, convert back, translate back. Do it fast.
+
         const rad = Math.PI / 180.0;
         const cos = Math.cos(degrees * rad);
         const sin = Math.sin(degrees * rad);
@@ -457,7 +462,7 @@ function Polygon(points) {
      */
     Polygon.prototype.translate = function(delta) {
         for (let i = 0; i < this.points.length; i++) {
-            this.points[i].add(delta);
+            this.points[i].add(delta.points[i]);
         }
     }
 }
@@ -465,70 +470,76 @@ function Polygon(points) {
 /* Stores the data for a 3D point.
  *
  * Parameters:
- *  x: the x coordinate.
- *  y: the y coordinate.
- *  z: the z coordinate.
+ *  any number of points which will be stored in the coords array
  */
-function Point(x, y, z) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
+function Point() {
+    this.set(arguments);
 
-    Point.prototype.set = function(x, y, z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    Point.prototype.sync = function() {
+        if (this.dim >= 1) this.x = this.coords[0];
+        if (this.dim >= 2) this.y = this.coords[1];
+        if (this.dim >= 3) this.z = this.coords[2];
+        if (this.dim >= 4) this.w = this.coords[3];
+    }
+
+    Point.prototype.set = function() {
+        this.coords = arguments;
+        this.dim = this.coords.length;
+        this.sync();
     }
 
     Point.prototype.add = function(point) {
-        this.x += point.x;
-        this.y += point.y;
-        this.z += point.z;
+        for (var i = 0; i < Math.min(this.dim, point.dim); i++) {
+            this.coords[i] += point.coords[i];
+        }
+        this.sync();
     }
 
     Point.prototype.getAdd = function(point) {
-        return new Point(this.x + point.x,
-                        this.y + point.y,
-                        this.z + point.z);
+        return new Point(this.coords).add(point.coords);
     }
 
     Point.prototype.subtract = function(point) {
-        this.x -= point.x;
-        this.y -= point.y;
-        this.z -= point.z;
+        for (var i = 0; i < Math.min(this.dim, point.dim); i++) {
+            this.coords[i] -= point.coords[i];
+        }
+        this.sync();
     }
 
     Point.prototype.getSubtract = function(point) {
-        return new Point(this.x - point.x,
-                        this.y - point.y,
-                        this.z - point.z);
+        return new Point(this.coords).subtract(point.coords);
     }
 
-    Point.prototype.multiply = function(scaler) {
-        this.x *= scaler;
-        this.y *= scaler;
-        this.z *= scaler;
+    Point.prototype.multiply = function(scalar) {
+        for (var i = 0; i < this.dim; i++) {
+            this.coords[i] *= scalar
+        }
+        this.sync();
     }
 
-    Point.prototype.getMultiply = function(point) {
-        var x = this.x * scaler;
-        var y = this.y * scaler;
-        var z = this.z * scaler;
-        return new Point(x, y, z);
+    Point.prototype.getMultiply = function(scalar) {
+        return new Point(this.coords).multiply(scalar);
     };
 
     Point.prototype.distance = function(point) {
         var temp = this.getSubtract(point);
-        return Math.sqrt(temp.x*temp.x + temp.y*temp.y + temp.z*temp.z);
+        var sum = 0;
+        for (var i = 0; i < this.dim; i++) {
+            sum += temp.coords[i]*temp.coords[i];
+        }
+        return Math.sqrt(sum);
     }
 
     Point.prototype.fastDist = function(point) {
-        return  ((this.x-point.x)*(this.x-point.x))
-                +((this.y-point.y)*(this.y-point.y))
-                +((this.z-point.z)*(this.z-point.z));
+        var temp = this.getSubtract(point);
+        var sum = 0;
+        for (var i = 0; i < this.dim; i++) {
+            sum += temp.coords[i]*temp.coords[i];
+        }
+        return sum;
     }
 
     Point.prototype.copy = function() {
-        return new Point(this.x, this.y, this.z);
+        return new Point(this.coords);
     }
 }
