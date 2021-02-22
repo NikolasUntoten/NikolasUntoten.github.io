@@ -29,6 +29,10 @@ a {
     border-color: var(--detail-color);
     background-color: var(--highlight-color);
 }
+.full-canvas {
+  width: 100%;
+  height: 100%;
+}
 #navbar {
     width: 100%;
     margin:0px;

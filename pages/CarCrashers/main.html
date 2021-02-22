@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Car Crashers!</title>
+
+        <link rel="stylesheet" type:"text.CSS" href="/resources/css/styles.css">
+        <link rel="stylesheet" type:"text.CSS" href="styles.css">
+
+        <script language="javascript" type="text/javascript" src="/resources/utility/matterjs/build/matter.min.js"></script>
+
+        <!-- CODE TO LOAD IN NAVBAR -->
+        <script language="javascript" src="/resources/utility/jquery-3.3.1.min.js"></script>
+        <script language="javascript" src="/resources/utility/loadnav.js"></script>
+        <script>start("3d");</script>
+
+        <script language="javascript" type="text/javascript" src="app.js"></script>
+    </head>
+    <body onkeydown="keyEvent(event, true)" onkeyup="keyEvent(event, false)">
+        <div>
+            <div id="navbar"></div>
+            <canvas id="canvas" class="full-canvas"></canvas>
+            <div id="app" />
+        </div>
+
+
+    </body>
+</html>
